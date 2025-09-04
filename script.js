@@ -22,7 +22,7 @@ const btn = document.getElementById("btn");
 const countDisplay = document.getElementById("count");
 
 // 「へー！」音を JS 内で作成
-const sound = new Audio("https://www.myinstants.com/media/sounds/hee-62617.mp3");
+const sound = new Audio("https://ino-code11.github.io/hee-counter/hee.mp3");
 
 // Firestore ドキュメント参照
 const counterRef = doc(db, "counter", "hee");
@@ -55,3 +55,4 @@ onSnapshot(counterRef, (docSnap) => {
     countDisplay.textContent = docSnap.data().count;
   }
 });
+
