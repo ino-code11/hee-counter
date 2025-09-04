@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>へー！カウンター</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    button { font-size: 2rem; padding: 20px 40px; border-radius: 10px; cursor: pointer; }
+    #count { font-size: 3rem; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>へー！カウンター（みんなで共有）</h1>
+  <button id="btn">へー！</button>
+  <div id="count">0</div>
+  
+  <!-- 効果音 -->
+  <audio id="sound" src="https://www.myinstants.com/media/sounds/tindeck_1.mp3"></audio>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Firebaseのライブラリを読み込み
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
+      from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    // ⬇️ Firebaseの設定（自分のプロジェクトで発行されるものに差し替え）
+    const firebaseConfig = {
+      apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
+      authDomain: "hee-counter-1.firebaseapp.com",
+      projectId: "hee-counter-1",
+      storageBucket: "hee-counter-1.firebasestorage.app",
+      messagingSenderId: "487272221928",
+      appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
+    };
+
+    // Firebase初期化
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const btn = document.getElementById("btn");
+    const countDisplay = document.getElementById("count");
+    const sound = document.getElementById("sound");
+
+    const counterRef = doc(db, "counter", "hee"); // Firestore: counter/hee
+
+    // 初期化（まだ無かったら0を作る）
+    const init = async () => {
+      const snap = await getDoc(counterRef);
+      if (!snap.exists()) {
+        await setDoc(counterRef, { count: 0 });
+      }
+    };
+    init();
+
+    // ボタンを押したらカウント+1
+    btn.addEventListener("click", async () => {
+      const snap = await getDoc(counterRef);
+      if (snap.exists()) {
+        const current = snap.data().count || 0;
+        await updateDoc(counterRef, { count: current + 1 });
+        sound.currentTime = 0;
+        sound.play();
+      }
+    });
+
+    // リアルタイムで表示更新
+    onSnapshot(counterRef, (docSnap) => {
+      if (docSnap.exists()) {
+        countDisplay.textContent = docSnap.data().count;
+      }
+    });
+  </script>
+</body>
+</html>
