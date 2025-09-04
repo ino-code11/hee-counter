@@ -1,78 +1,130 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>へー！カウンター</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; }
-    button { font-size: 2rem; padding: 20px 40px; border-radius: 10px; cursor: pointer; }
-    #count { font-size: 3rem; margin-top: 20px; }
-  </style>
+<meta charset="UTF-8">
+<title>へー！カウンター</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', sans-serif;
+    text-align: center;
+    padding: 50px;
+    background: #fff0f5;
+  }
+
+  button {
+    font-size: 2rem;
+    padding: 20px 50px;
+    border-radius: 30px; 
+    background: linear-gradient(45deg, #ff9a9e, #fad0c4); 
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  button:active {
+    transform: scale(0.95);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+
+  #count {
+    font-size: 4rem;
+    margin-top: 20px;
+    color: #ff6f91;
+    transition: transform 0.1s ease;
+  }
+
+  #count.animate {
+    transform: scale(1.3);
+  }
+
+  h1 {
+    color: #ff6f91;
+    text-shadow: 1px 1px 3px #ffb6c1;
+  }
+
+  /* ハート・星アニメーション */
+  .float {
+    position: absolute;
+    font-size: 1.5rem;
+    user-select: none;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+  }
+</style>
 </head>
 <body>
-  <h1>へー！カウンター</h1>
-  <button id="btn">へー！</button>
-  <div id="count">0</div>
+<h1>へー！カウンター</h1>
+<button id="btn">へー！</button>
+<div id="count">0</div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
-      from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
+    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    // Firebase 設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
-      authDomain: "hee-counter-1.firebaseapp.com",
-      projectId: "hee-counter-1",
-      storageBucket: "hee-counter-1.firebasestorage.app",
-      messagingSenderId: "487272221928",
-      appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
+    authDomain: "hee-counter-1.firebaseapp.com",
+    projectId: "hee-counter-1",
+    storageBucket: "hee-counter-1.firebasestorage.app",
+    messagingSenderId: "487272221928",
+    appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
+  };
 
-    // Firebase 初期化
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    // HTML要素
-    const btn = document.getElementById("btn");
-    const countDisplay = document.getElementById("count");
+  const btn = document.getElementById("btn");
+  const countDisplay = document.getElementById("count");
+  const counterRef = doc(db, "counter", "hee");
 
-    // 「へー！」音を JS 内で作成
-    const sound = new Audio("https://ino-code11.github.io/hee-counter/hee.mp3");
+  const init = async () => {
+    const snap = await getDoc(counterRef);
+    if (!snap.exists()) {
+      await setDoc(counterRef, { count: 0 });
+    }
+  };
+  init();
 
-    // Firestore ドキュメント参照
-    const counterRef = doc(db, "counter", "hee");
+  btn.addEventListener("click", async (e) => {
+    const snap = await getDoc(counterRef);
+    if (snap.exists()) {
+      const current = snap.data().count || 0;
+      await updateDoc(counterRef, { count: current + 1 });
+    }
 
-    // 初期化（まだ無ければ0を作る）
-    const init = async () => {
-      const snap = await getDoc(counterRef);
-      if (!snap.exists()) {
-        await setDoc(counterRef, { count: 0 });
-      }
-    };
-    init();
+    // ランダムでハート or 星
+    const shapes = ['❤️','✨','💖','⭐'];
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
 
-    // ボタン押したらカウント+音再生
-    btn.addEventListener("click", async () => {
-      const snap = await getDoc(counterRef);
-      if (snap.exists()) {
-        const current = snap.data().count || 0;
-        await updateDoc(counterRef, { count: current + 1 });
+    const floatEl = document.createElement('div');
+    floatEl.textContent = shape;
+    floatEl.className = 'float';
+    document.body.appendChild(floatEl);
 
-        // 音を再生
-        sound.currentTime = 0;
-        sound.play();
-      }
-    });
+    // ボタン位置に出現
+    const rect = btn.getBoundingClientRect();
+    floatEl.style.left = rect.left + rect.width/2 + 'px';
+    floatEl.style.top = rect.top + 'px';
 
-    // リアルタイムで表示更新
-    onSnapshot(counterRef, (docSnap) => {
-      if (docSnap.exists()) {
-        countDisplay.textContent = docSnap.data().count;
-      }
-    });
-  </script>
+    // 1秒後に削除
+    setTimeout(() => document.body.removeChild(floatEl), 1000);
+  });
+
+  onSnapshot(counterRef, (docSnap) => {
+    if (docSnap.exists()) {
+      countDisplay.textContent = docSnap.data().count;
+      countDisplay.classList.add("animate");
+      setTimeout(() => countDisplay.classList.remove("animate"), 100);
+    }
+  });
+</script>
 </body>
 </html>
-
