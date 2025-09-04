@@ -16,12 +16,11 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    // Firebaseのライブラリを読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
       from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    // ⬇️ Firebaseの設定（自分のプロジェクトで発行されるものに差し替え）
+    // Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
       authDomain: "hee-counter-1.firebaseapp.com",
@@ -31,17 +30,21 @@
       appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
     };
 
-    // Firebase初期化
+    // Firebase 初期化
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // HTML要素
     const btn = document.getElementById("btn");
     const countDisplay = document.getElementById("count");
-    const sound = document.getElementById("sound");
 
-    const counterRef = doc(db, "counter", "hee"); // Firestore: counter/hee
+    // 「へー！」音を JS 内で作成
+    const sound = new Audio("https://www.myinstants.com/media/sounds/hee-62617.mp3");
 
-    // 初期化（まだ無かったら0を作る）
+    // Firestore ドキュメント参照
+    const counterRef = doc(db, "counter", "hee");
+
+    // 初期化（まだ無ければ0を作る）
     const init = async () => {
       const snap = await getDoc(counterRef);
       if (!snap.exists()) {
@@ -50,12 +53,14 @@
     };
     init();
 
-    // ボタンを押したらカウント+1
+    // ボタン押したらカウント+音再生
     btn.addEventListener("click", async () => {
       const snap = await getDoc(counterRef);
       if (snap.exists()) {
         const current = snap.data().count || 0;
         await updateDoc(counterRef, { count: current + 1 });
+
+        // 音を再生
         sound.currentTime = 0;
         sound.play();
       }
@@ -69,6 +74,4 @@
     });
   </script>
 </body>
-
 </html>
-
