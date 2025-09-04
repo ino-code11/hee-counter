@@ -34,3 +34,18 @@ btn.addEventListener("click", () => {
     value: firebase.firestore.FieldValue.increment(1)
   });
 });
+
+// 音声ファイルのURL
+const audioUrl = 'https://www.myinstants.com/media/sounds/hee-62617.mp3';
+
+// Audioオブジェクトを作成
+const audio = new Audio(audioUrl);
+
+// ボタンがクリックされたときに音を再生
+btn.addEventListener('click', () => {
+  audio.play();
+  // Firestoreのカウント処理もここで行う
+  counterRef.update({
+    value: firebase.firestore.FieldValue.increment(1)
+  });
+});
