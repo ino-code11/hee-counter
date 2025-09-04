@@ -1,44 +1,57 @@
-// Firestoreを使う場合は、Firebaseの設定をここに貼る
-// （前にFirebaseからコピーした「const firebaseConfig = { ... }」のやつ）
-    const firebaseConfig = {
-      apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
-      authDomain: "hee-counter-1.firebaseapp.com",
-      projectId: "hee-counter-1",
-      storageBucket: "hee-counter-1.firebasestorage.app",
-      messagingSenderId: "487272221928",
-      appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
-    };
+// Firebase SDK（index.htmlと同じく type="module" なら import を使う）
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
+  from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-// 初期化（前に案内したfirebase.initializeApp(firebaseConfig); が必要）
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Firebase 設定（自分のプロジェクト用に差し替えてね）
+const firebaseConfig = {
+  apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
+  authDomain: "hee-counter-1.firebaseapp.com",
+  projectId: "hee-counter-1",
+  storageBucket: "hee-counter-1.firebasestorage.app",
+  messagingSenderId: "487272221928",
+  appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
+};
 
-const btn = document.getElementById("heyBtn");
-const countDiv = document.getElementById("count");
+// Firebase 初期化
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-// Firestoreのドキュメント参照
-const counterRef = db.collection("counter").doc("main");
+// HTML要素
+const btn = document.getElementById("btn");
+const countDisplay = document.getElementById("count");
 
-// 音声ファイルのURL（任意の効果音に差し替え可）
-const audioUrl = 'https://www.myinstants.com/media/sounds/hee-62617.mp3';
-const audio = new Audio(audioUrl);
+// 「へー！」音を JS 内で作成
+const sound = new Audio("https://www.myinstants.com/media/sounds/hee-62617.mp3");
 
-// 初期読み込み & リアルタイム更新
-counterRef.onSnapshot((doc) => {
-  if (doc.exists) {
-    countDiv.textContent = doc.data().value;
-  } else {
-    counterRef.set({ value: 0 });
+// Firestore ドキュメント参照
+const counterRef = doc(db, "counter", "hee");
+
+// 初期化（まだ無ければ0を作る）
+const init = async () => {
+  const snap = await getDoc(counterRef);
+  if (!snap.exists()) {
+    await setDoc(counterRef, { count: 0 });
+  }
+};
+init();
+
+// ボタン押したらカウント+音再生
+btn.addEventListener("click", async () => {
+  const snap = await getDoc(counterRef);
+  if (snap.exists()) {
+    const current = snap.data().count || 0;
+    await updateDoc(counterRef, { count: current + 1 });
+
+    // 音を再生
+    sound.currentTime = 0;
+    sound.play();
   }
 });
 
-// ボタン押したときの処理
-btn.addEventListener("click", () => {
-  // ① 音を再生
-  audio.play();
-
-  // ② Firestoreのカウントを増やす
-  counterRef.update({
-    value: firebase.firestore.FieldValue.increment(1)
-  });
+// リアルタイムで表示更新
+onSnapshot(counterRef, (docSnap) => {
+  if (docSnap.exists()) {
+    countDisplay.textContent = docSnap.data().count;
+  }
 });
