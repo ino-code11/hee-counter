@@ -5,20 +5,25 @@
 <title>へー！カウンター</title>
 <style>
   body {
-    font-family: 'Comic Sans MS', sans-serif;
+    font-family: 'Arial', sans-serif;
     text-align: center;
     padding: 50px;
-    background: #fff0f5;
+    background: #f0f8ff; /* 柔らかい水色 */
+  }
+
+  h1 {
+    color: #333333;
+    text-shadow: 1px 1px 2px #aaaaaa;
   }
 
   button {
     font-size: 2rem;
     padding: 20px 50px;
-    border-radius: 30px; 
-    background: linear-gradient(45deg, #ff9a9e, #fad0c4); 
+    border-radius: 20px; 
+    background: linear-gradient(135deg, #a0e4b0, #6ec1d6); /* 青緑系グラデ */
     border: none;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+    box-shadow: 0 5px 12px rgba(0,0,0,0.2); 
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
 
@@ -30,31 +35,12 @@
   #count {
     font-size: 4rem;
     margin-top: 20px;
-    color: #ff6f91;
+    color: #444444;
     transition: transform 0.1s ease;
   }
 
   #count.animate {
     transform: scale(1.3);
-  }
-
-  h1 {
-    color: #ff6f91;
-    text-shadow: 1px 1px 3px #ffb6c1;
-  }
-
-  /* ハート・星アニメーション */
-  .float {
-    position: absolute;
-    font-size: 1.5rem;
-    user-select: none;
-    pointer-events: none;
-    animation: floatUp 1s ease-out forwards;
-  }
-
-  @keyframes floatUp {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
   }
 </style>
 </head>
@@ -63,12 +49,12 @@
 <button id="btn">へー！</button>
 <div id="count">0</div>
 
-<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getFirestore, doc, getDoc, updateDoc, onSnapshot, setDoc } 
     from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+  // Firebase 設定
   const firebaseConfig = {
     apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
     authDomain: "hee-counter-1.firebaseapp.com",
@@ -85,6 +71,10 @@
   const countDisplay = document.getElementById("count");
   const counterRef = doc(db, "counter", "hee");
 
+  // 「へー！」音（自分でアップした mp3 URL に置き換えてもOK）
+  const sound = new Audio("https://ino-code11.github.io/hee-counter/hee.mp3");
+
+  // 初期化
   const init = async () => {
     const snap = await getDoc(counterRef);
     if (!snap.exists()) {
@@ -93,31 +83,19 @@
   };
   init();
 
-  btn.addEventListener("click", async (e) => {
+  // ボタン押したらカウント + 音再生 + アニメーション
+  btn.addEventListener("click", async () => {
     const snap = await getDoc(counterRef);
     if (snap.exists()) {
       const current = snap.data().count || 0;
       await updateDoc(counterRef, { count: current + 1 });
+
+      sound.currentTime = 0;
+      sound.play();
     }
-
-    // ランダムでハート or 星
-    const shapes = ['❤️','✨','💖','⭐'];
-    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-
-    const floatEl = document.createElement('div');
-    floatEl.textContent = shape;
-    floatEl.className = 'float';
-    document.body.appendChild(floatEl);
-
-    // ボタン位置に出現
-    const rect = btn.getBoundingClientRect();
-    floatEl.style.left = rect.left + rect.width/2 + 'px';
-    floatEl.style.top = rect.top + 'px';
-
-    // 1秒後に削除
-    setTimeout(() => document.body.removeChild(floatEl), 1000);
   });
 
+  // リアルタイムで表示更新 + アニメーション
   onSnapshot(counterRef, (docSnap) => {
     if (docSnap.exists()) {
       countDisplay.textContent = docSnap.data().count;
