@@ -19,6 +19,10 @@ const countDiv = document.getElementById("count");
 // Firestoreのドキュメント参照
 const counterRef = db.collection("counter").doc("main");
 
+// 音声ファイルのURL（任意の効果音に差し替え可）
+const audioUrl = 'https://www.myinstants.com/media/sounds/hee-62617.mp3';
+const audio = new Audio(audioUrl);
+
 // 初期読み込み & リアルタイム更新
 counterRef.onSnapshot((doc) => {
   if (doc.exists) {
@@ -30,21 +34,10 @@ counterRef.onSnapshot((doc) => {
 
 // ボタン押したときの処理
 btn.addEventListener("click", () => {
-  counterRef.update({
-    value: firebase.firestore.FieldValue.increment(1)
-  });
-});
-
-// 音声ファイルのURL
-const audioUrl = 'https://www.myinstants.com/media/sounds/hee-62617.mp3';
-
-// Audioオブジェクトを作成
-const audio = new Audio(audioUrl);
-
-// ボタンがクリックされたときに音を再生
-btn.addEventListener('click', () => {
+  // ① 音を再生
   audio.play();
-  // Firestoreのカウント処理もここで行う
+
+  // ② Firestoreのカウントを増やす
   counterRef.update({
     value: firebase.firestore.FieldValue.increment(1)
   });
