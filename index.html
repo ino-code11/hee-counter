@@ -11,10 +11,10 @@
       background:#fdfdfd;
       color:#333;
     }
-    h1, h2 { margin: 15px 0; }
+    h1 { margin: 15px 0; }
 
     /* ニューモーフィズムボタン */
-    #buttons button {
+    .member-btn {
       width: 100px;
       height: 60px;
       font-size: 1rem;
@@ -30,9 +30,14 @@
       box-shadow: 5px 5px 10px #bebebe,
                   -5px -5px 10px #ffffff;
     }
-    #buttons button:active {
+    .member-btn:active {
       box-shadow: inset 3px 3px 6px #bebebe,
                   inset -3px -3px 6px #ffffff;
+    }
+
+    .count-display {
+      margin-top: 4px;
+      font-weight: bold;
     }
 
     #log {
@@ -75,15 +80,6 @@
       100% { transform: scale(1); }
     }
 
-    #scoreboard {
-      margin-top: 20px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: left;
-      font-weight: bold;
-    }
-
     #resetBtn {
       margin-top:20px;
       padding:8px 16px;
@@ -101,26 +97,54 @@
   <h1>へー！カウンター</h1>
 
   <div id="buttons">
-    <button data-name="三浦さん">三浦さん<br>へー！</button>
-    <button data-name="快平さん">快平さん<br>へー！</button>
-    <button data-name="佐々木さん">佐々木さん<br>へー！</button>
-    <button data-name="園田さん">園田さん<br>へー！</button>
-    <button data-name="堀田さん">堀田さん<br>へー！</button>
-    <button data-name="宮崎さん">宮崎さん<br>へー！</button>
-    <button data-name="渋谷さん">渋谷さん<br>へー！</button>
-    <button data-name="工藤さん">工藤さん<br>へー！</button>
-    <button data-name="秋山さん">秋山さん<br>へー！</button>
-    <button data-name="隅田さん">隅田さん<br>へー！</button>
-    <button data-name="李さん">李さん<br>へー！</button>
+    <div>
+      <button class="member-btn" data-name="三浦さん">三浦さん<br>へー！</button>
+      <div class="count-display" id="count-三浦さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="快平さん">快平さん<br>へー！</button>
+      <div class="count-display" id="count-快平さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="佐々木さん">佐々木さん<br>へー！</button>
+      <div class="count-display" id="count-佐々木さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="園田さん">園田さん<br>へー！</button>
+      <div class="count-display" id="count-園田さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="堀田さん">堀田さん<br>へー！</button>
+      <div class="count-display" id="count-堀田さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="宮崎さん">宮崎さん<br>へー！</button>
+      <div class="count-display" id="count-宮崎さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="渋谷さん">渋谷さん<br>へー！</button>
+      <div class="count-display" id="count-渋谷さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="工藤さん">工藤さん<br>へー！</button>
+      <div class="count-display" id="count-工藤さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="秋山さん">秋山さん<br>へー！</button>
+      <div class="count-display" id="count-秋山さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="隅田さん">隅田さん<br>へー！</button>
+      <div class="count-display" id="count-隅田さん">0回</div>
+    </div>
+    <div>
+      <button class="member-btn" data-name="李さん">李さん<br>へー！</button>
+      <div class="count-display" id="count-李さん">0回</div>
+    </div>
   </div>
-
-  <div id="count">0</div>
 
   <h2>へー！ログ</h2>
   <div id="log"></div>
-
-  <h2>部員ごとの押下回数</h2>
-  <div id="scoreboard"></div>
 
   <button id="resetBtn">リセット</button>
 
@@ -144,9 +168,6 @@
 
     const counterRef = doc(db, "counter", "hee");
     const logDiv = document.getElementById("log");
-    const countDisplay = document.getElementById("count");
-    const scoreboardDiv = document.getElementById("scoreboard");
-    const resetBtn = document.getElementById("resetBtn");
 
     const memberColors = {
       "三浦さん": "#FFB3BA",
@@ -170,16 +191,18 @@
     };
     init();
 
-    const buttons = document.querySelectorAll("#buttons button");
+    const buttons = document.querySelectorAll(".member-btn");
     buttons.forEach(btn => {
       const name = btn.dataset.name;
-      btn.style.background = memberColors[name]; // 色を付ける
+      btn.style.background = memberColors[name];
+
       btn.addEventListener("click", async () => {
         const snap = await getDoc(counterRef);
         if (snap.exists()) {
           const current = snap.data().count || 0;
           await updateDoc(counterRef, { count: current + 1 });
         }
+
         await addDoc(collection(db, "logs"), {
           name: name,
           timestamp: serverTimestamp()
@@ -196,12 +219,6 @@
       });
     });
 
-    onSnapshot(counterRef, (docSnap) => {
-      if (docSnap.exists()) {
-        countDisplay.textContent = docSnap.data().count;
-      }
-    });
-
     const logsQuery = query(collection(db, "logs"), orderBy("timestamp", "asc"));
     onSnapshot(logsQuery, (snapshot) => {
       const counts = {};
@@ -210,14 +227,12 @@
         counts[name] = (counts[name] || 0) + 1;
       });
 
-      // スコアボード更新
-      const memberNames = ["三浦さん","快平さん","佐々木さん","園田さん","堀田さん","宮崎さん","渋谷さん","工藤さん","秋山さん","隅田さん","李さん"];
-      let scoreHtml = "";
-      memberNames.forEach(name => {
-        const num = counts[name] || 0;
-        scoreHtml += `<div style="color:${memberColors[name]}">${name}: ${num}回</div>`;
+      // ボタン下にカウント表示
+      buttons.forEach(btn => {
+        const name = btn.dataset.name;
+        const display = document.getElementById("count-" + name);
+        display.textContent = (counts[name] || 0) + "回";
       });
-      scoreboardDiv.innerHTML = scoreHtml;
 
       // ログ更新（吹き出し風）
       logDiv.innerHTML = "";
