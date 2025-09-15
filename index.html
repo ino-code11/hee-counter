@@ -1,73 +1,73 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <title>へー！ライブログ ＋ 集計</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>へー！カウンター</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; background:#f7fafc; margin:0; padding:24px; color:#111; }
-    h1 { text-align:center; margin-bottom:18px; }
-    .container { max-width:980px; margin:0 auto; display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items:start; }
-
-    /* LEFT: buttons + chat log */
-    .panel { background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(20,20,40,0.06); }
-    #buttons { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-    .member-btn {
-      padding:10px 14px; border-radius:10px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#7fd3d0,#7fb8ff); color:#042; font-weight:600;
-      box-shadow:0 4px 10px rgba(40,60,90,0.06);
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    #buttons button {
+      font-size: 1.2rem; padding: 10px 20px; margin: 5px; border-radius: 8px; cursor: pointer;
     }
-    .member-btn:active { transform:translateY(1px); }
-
-    /* chat log */
-    #log { height:520px; overflow:auto; padding:8px; border-radius:8px; background:#fbfdff; border:1px solid #eef3f8; }
-    .log-item { padding:8px; margin-bottom:6px; border-radius:8px; background:linear-gradient(180deg,#ffffff,#f1f8ff); box-shadow:0 1px 0 rgba(0,0,0,0.02); }
-    .log-meta { font-size:12px; color:#6b7280; margin-bottom:4px; }
-    .log-text { font-size:15px; color:#0f172a; }
-
-    /* RIGHT: aggregate (fixed-order list) */
-    .agg-title { margin-bottom:8px; font-weight:700; }
-    #aggregate { display:flex; flex-direction:column; gap:8px; }
-    .agg-row { display:flex; align-items:center; gap:8px; padding:10px; border-radius:8px; background:#fff; border:1px solid #eef3f8; }
-    .agg-name { width:110px; font-weight:600; }
-    .agg-bar-bg { flex:1; height:12px; background:#eef2ff; border-radius:999px; overflow:hidden; }
-    .agg-bar { height:100%; background:linear-gradient(90deg,#60d394,#54a0ff); }
-    .agg-count { width:44px; text-align:right; font-weight:700; color:#0b1220; }
-
-    /* responsive */
-    @media (max-width:920px) {
-      .container { grid-template-columns: 1fr; }
-      #log { height:360px; }
+    #count { font-size: 2rem; margin-top: 20px; }
+    #log {
+      margin-top: 30px;
+      text-align: left;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      background: #fafafa;
+      height: 300px;
+      overflow-y: auto;
     }
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      margin: 6px 0;
+    }
+    .name { font-weight: bold; margin-right: 8px; min-width: 70px; text-align: right; }
+    .bubble { padding: 6px 12px; border-radius: 16px; max-width: 300px; word-wrap: break-word; color: #fff; }
+    .alice { background: #3498db; }  /* 青 */
+    .bob { background: #2ecc71; }    /* 緑 */
+    .carol { background: #e67e22; }  /* オレンジ */
+    .dave { background: #9b59b6; }   /* 紫 */
+    .eve { background: #e74c3c; }    /* 赤 */
+    .frank { background: #1abc9c; }  /* 水色 */
+    .grace { background: #f1c40f; }  /* 黄 */
+    .heidi { background: #e84393; }  /* ピンク */
+    .ivan { background: #34495e; }   /* 濃紺 */
+    .judy { background: #d35400; }   /* 茶 */
+    .mallory { background: #7f8c8d; }/* グレー */
   </style>
 </head>
 <body>
-  <h1>へー！ — ライブログ ＆ 集計</h1>
+  <h1>へー！カウンター</h1>
 
-  <div class="container">
-    <!-- LEFT: buttons + log -->
-    <div class="panel">
-      <div id="buttons"></div>
-      <div style="font-weight:700; margin-bottom:8px;">直近ログ</div>
-      <div id="log"></div>
-    </div>
-
-    <!-- RIGHT: aggregate fixed-order -->
-    <div class="panel">
-      <div class="agg-title">集計（固定順）</div>
-      <div id="aggregate"></div>
-    </div>
+  <div id="buttons">
+    <button data-name="Alice">Alice へー！</button>
+    <button data-name="Bob">Bob へー！</button>
+    <button data-name="Carol">Carol へー！</button>
+    <button data-name="Dave">Dave へー！</button>
+    <button data-name="Eve">Eve へー！</button>
+    <button data-name="Frank">Frank へー！</button>
+    <button data-name="Grace">Grace へー！</button>
+    <button data-name="Heidi">Heidi へー！</button>
+    <button data-name="Ivan">Ivan へー！</button>
+    <button data-name="Judy">Judy へー！</button>
+    <button data-name="Mallory">Mallory へー！</button>
   </div>
 
-  <!-- Firebase + logic -->
-  <script type="module">
-    // --- Firebase libs (modular) ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import {
-      getFirestore, collection, doc, getDoc, setDoc, updateDoc,
-      onSnapshot, addDoc, serverTimestamp, query, orderBy, limit, increment
-    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  <div id="count">0</div>
+  <h2>へー！ログ</h2>
+  <div id="log"></div>
 
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, updateDoc } 
+      from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
     // 🔹 あなたのFirebase設定をここにコピペ！
     const firebaseConfig = {
@@ -79,147 +79,67 @@
       appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
     };
 
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 部員リスト（固定）
-    const members = [
-      { id: "m1", name: "三浦さん" },
-      { id: "m2", name: "快平さん" },
-      { id: "m3", name: "佐々木さん" },
-      { id: "m4", name: "園田さん" },
-      { id: "m5", name: "渋谷さん" },
-      { id: "m6", name: "工藤さん" },
-      { id: "m7", name: "宮﨑さん" },
-      { id: "m8", name: "堀田さん" },
-      { id: "m9", name: "秋山さん" },
-      { id: "m10", name: "隅田さん" },
-      { id: "m11", name: "李さん" }
-    ];
+    const counterRef = doc(db, "counter", "hee");
+    const logDiv = document.getElementById("log");
+    const countDisplay = document.getElementById("count");
 
-    const buttonsDiv = document.getElementById("buttons");
-    const rankingList = document.getElementById("ranking-list");
-
-    // DOM refs
-    const buttonsRoot = document.getElementById("buttons");
-    const logRoot = document.getElementById("log");
-    const aggRoot = document.getElementById("aggregate");
-
-    // --- 初期化：members コレクションに doc が無ければ作る（count:0） ---
-    async function ensureMembersExist() {
-      for (const m of members) {
-        const ref = doc(db, "members", m.id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, { name: m.name, count: 0 });
-        }
+    const init = async () => {
+      const snap = await getDoc(counterRef);
+      if (!snap.exists()) {
+        await setDoc(counterRef, { count: 0 });
       }
-    }
-    ensureMembersExist().catch(console.error);
+    };
+    init();
 
-    // --- UI: ボタンを作る（押すと count++ と logs へ1行追加） ---
-    members.forEach(m => {
-      const btn = document.createElement("button");
-      btn.className = "member-btn";
-      btn.textContent = `${m.name}「へー！」`;
+    // ボタンごとにイベント
+    const buttons = document.querySelectorAll("#buttons button");
+    buttons.forEach(btn => {
       btn.addEventListener("click", async () => {
-        try {
-          // 1) members/{id}.count をインクリメント（安全に）
-          const ref = doc(db, "members", m.id);
-          await updateDoc(ref, { count: increment(1) });
+        const name = btn.dataset.name;
 
-          // 2) logs コレクションに追加（時刻と名前を記録）
-          await addDoc(collection(db, "logs"), {
-            memberId: m.id,
-            name: m.name,
-            createdAt: serverTimestamp()
-          });
-        } catch (err) {
-          console.error("押下処理エラー:", err);
+        // 総カウント更新
+        const snap = await getDoc(counterRef);
+        if (snap.exists()) {
+          const current = snap.data().count || 0;
+          await updateDoc(counterRef, { count: current + 1 });
         }
+
+        // ログ追加
+        await addDoc(collection(db, "logs"), {
+          name: name,
+          timestamp: serverTimestamp()
+        });
       });
-      buttonsRoot.appendChild(btn);
     });
 
-    // --- リアルタイム：logs を監視してチャット風に表示 ---
-    // 最新50件（新しい順）を監視
-    const logsQuery = query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(50));
+    // 総カウント表示更新
+    onSnapshot(counterRef, (docSnap) => {
+      if (docSnap.exists()) {
+        countDisplay.textContent = docSnap.data().count;
+      }
+    });
+
+    // リアルタイムログ表示
+    const logsQuery = query(collection(db, "logs"), orderBy("timestamp", "asc"));
     onSnapshot(logsQuery, (snapshot) => {
-      // snapshotは降順（新しい順）なので、表示は逆にして上から新しく見せる or 下に追加するか選べる。
-      // ここでは「上に新しいものが来る」スタイルで新しい順に表示。
-      logRoot.innerHTML = ""; // clear
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        // createdAt may be null for recently added before serverTimestamp resolves; handle gracefully:
-        const ts = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleTimeString() : "—";
-        const div = document.createElement("div");
-        div.className = "log-item";
-        div.innerHTML = `<div class="log-meta">${data.name} · ${ts}</div><div class="log-text">へー！</div>`;
-        logRoot.appendChild(div);
+      logDiv.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        const nameLower = data.name.toLowerCase();
+        const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString() : "";
+        entry.innerHTML = `
+          <div class="name">${data.name}:</div>
+          <div class="bubble ${nameLower}">へー！ <small>(${time})</small></div>
+        `;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight; // 自動スクロール
       });
     });
-
-    // --- リアルタイム：members を監視して集計（固定順）を表示 ---
-    // We'll keep a local map of counts for quick lookups.
-    const membersMap = new Map();
-    // initialize from Firestore snapshot of collection
-    onSnapshot(collection(db, "members"), (snap) => {
-      snap.forEach(d => {
-        membersMap.set(d.id, d.data().count ?? 0);
-      });
-      renderAggregate();
-    });
-
-    // Render aggregate list in the fixed members order
-    function renderAggregate() {
-      aggRoot.innerHTML = "";
-      // Determine maximum count for bar scaling
-      let max = 1;
-      for (const m of members) {
-        const c = membersMap.get(m.id) ?? 0;
-        if (c > max) max = c;
-      }
-      for (const m of members) {
-        const count = membersMap.get(m.id) ?? 0;
-        // make row
-        const row = document.createElement("div");
-        row.className = "agg-row";
-        // name
-        const nameEl = document.createElement("div");
-        nameEl.className = "agg-name";
-        nameEl.textContent = m.name;
-        // bar bg + bar
-        const barBg = document.createElement("div");
-        barBg.className = "agg-bar-bg";
-        const bar = document.createElement("div");
-        bar.className = "agg-bar";
-        const pct = Math.round((count / max) * 100);
-        bar.style.width = pct + "%";
-        // color accent for top 3 by current counts (optional)
-        // compute rank by scanning ordered counts quickly
-        // (We'll color by value: first three highest coloured)
-        row.appendChild(nameEl);
-        barBg.appendChild(bar);
-        row.appendChild(barBg);
-        const countEl = document.createElement("div");
-        countEl.className = "agg-count";
-        countEl.textContent = String(count);
-        row.appendChild(countEl);
-        aggRoot.appendChild(row);
-      }
-    }
-
-    // Helpful: scroll log to top when new entries appear (newest at top)
-    // The onSnapshot for logs re-renders all; ensure it's scrolled to top
-    onSnapshot(query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(1)), () => {
-      // small timeout to let DOM update
-      setTimeout(() => { if (logRoot) logRoot.scrollTop = 0; }, 50);
-    });
-
-    // Done
-    console.log("ライブログ＋集計 UI 初期化完了");
   </script>
 </body>
 </html>
-
