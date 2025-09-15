@@ -44,8 +44,29 @@
       margin: 6px 0;
     }
 
-    .name { font-weight: bold; margin-right: 8px; min-width: 70px; text-align: right; }
-    .bubble { padding: 6px 12px; border-radius: 16px; max-width: 300px; word-wrap: break-word; color: #fff; }
+    .name { 
+      font-weight: bold; 
+      margin-right: 8px; 
+      min-width: 70px; 
+      text-align: right; 
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    
+    .bubble {
+      padding: 6px 12px;
+      border-radius: 16px;
+      max-width: 300px;
+      word-wrap: break-word;
+      color: #333;          /* 文字色を濃いグレーに */
+      background: #fff;      /* 吹き出し背景を白に */
+      border: 1px solid #ccc; /* 薄い枠をつけると見やすい */
+      animation: pop 0.3s ease;
+    }
 
     .miura { background: #3498db; }
     .kaihei { background: #2ecc71; }
@@ -198,5 +219,6 @@
   </script>
 </body>
 </html>
+
 
 
