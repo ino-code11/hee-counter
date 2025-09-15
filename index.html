@@ -21,13 +21,14 @@
       border: none;
       border-radius: 16px;
       margin: 8px;
-      background: #e0e0e0;
-      box-shadow: 5px 5px 10px #bebebe,
-                  -5px -5px 10px #ffffff;
       cursor: pointer;
       transition: 0.2s;
       display: inline-block;
       line-height: 1.2;
+      color: #333;
+      font-weight: bold;
+      box-shadow: 5px 5px 10px #bebebe,
+                  -5px -5px 10px #ffffff;
     }
     #buttons button:active {
       box-shadow: inset 3px 3px 6px #bebebe,
@@ -62,7 +63,6 @@
       max-width: 300px;
       word-wrap: break-word;
       color: #333;
-      background: #fff;
       border: 1px solid #ccc;
       animation: pop 0.3s ease;
       box-shadow: 3px 3px 6px #bebebe,
@@ -148,6 +148,20 @@
     const scoreboardDiv = document.getElementById("scoreboard");
     const resetBtn = document.getElementById("resetBtn");
 
+    const memberColors = {
+      "三浦さん": "#FFB3BA",
+      "快平さん": "#FFDFBA",
+      "佐々木さん": "#FFFFBA",
+      "園田さん": "#BAFFC9",
+      "堀田さん": "#BAE1FF",
+      "宮崎さん": "#D7BAFF",
+      "渋谷さん": "#FFC1E3",
+      "工藤さん": "#BFFCC6",
+      "秋山さん": "#BAF0FF",
+      "隅田さん": "#FFE4BA",
+      "李さん": "#FFCCF9"
+    };
+
     const init = async () => {
       const snap = await getDoc(counterRef);
       if (!snap.exists()) {
@@ -158,8 +172,9 @@
 
     const buttons = document.querySelectorAll("#buttons button");
     buttons.forEach(btn => {
+      const name = btn.dataset.name;
+      btn.style.background = memberColors[name]; // 色を付ける
       btn.addEventListener("click", async () => {
-        const name = btn.dataset.name;
         const snap = await getDoc(counterRef);
         if (snap.exists()) {
           const current = snap.data().count || 0;
@@ -200,7 +215,7 @@
       let scoreHtml = "";
       memberNames.forEach(name => {
         const num = counts[name] || 0;
-        scoreHtml += `<div>${name}: ${num}回</div>`;
+        scoreHtml += `<div style="color:${memberColors[name]}">${name}: ${num}回</div>`;
       });
       scoreboardDiv.innerHTML = scoreHtml;
 
@@ -213,7 +228,9 @@
         const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString() : "";
         entry.innerHTML = `
           <div class="name">${data.name}:</div>
-          <div class="bubble">へー！ <small>(${time})</small></div>
+          <div class="bubble" style="background:${memberColors[data.name]};">
+            へー！ <small>(${time})</small>
+          </div>
         `;
         logDiv.appendChild(entry);
         logDiv.scrollTop = logDiv.scrollHeight;
