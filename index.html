@@ -9,7 +9,7 @@
       font-size: 1.2rem; padding: 10px 20px; margin: 5px; border-radius: 8px; cursor: pointer;
     }
     #count { font-size: 2rem; margin-top: 20px; }
-    
+
     #scoreboard {
       margin-top: 20px;
       max-width: 500px;
@@ -42,34 +42,45 @@
     .name { font-weight: bold; margin-right: 8px; min-width: 70px; text-align: right; }
     .bubble { padding: 6px 12px; border-radius: 16px; max-width: 300px; word-wrap: break-word; color: #fff; }
 
-    .alice { background: #3498db; }
-    .bob { background: #2ecc71; }
-    .carol { background: #e67e22; }
-    .dave { background: #9b59b6; }
-    .eve { background: #e74c3c; }
-    .frank { background: #1abc9c; }
-    .grace { background: #f1c40f; }
-    .heidi { background: #e84393; }
-    .ivan { background: #34495e; }
-    .judy { background: #d35400; }
-    .mallory { background: #7f8c8d; }
+    .miura { background: #3498db; }
+    .kaihei { background: #2ecc71; }
+    .sasaki { background: #e67e22; }
+    .sonoda { background: #9b59b6; }
+    .hotta { background: #e74c3c; }
+    .miyazaki { background: #1abc9c; }
+    .shibuya { background: #f1c40f; }
+    .kudo { background: #e84393; }
+    .akiyama { background: #34495e; }
+    .sumida { background: #d35400; }
+    .li { background: #7f8c8d; }
+
+    #resetBtn {
+      margin-top:20px;
+      padding:8px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      background:#e74c3c;
+      color:#fff;
+      font-weight:bold;
+      font-size:1rem;
+    }
   </style>
 </head>
 <body>
   <h1>へー！カウンター</h1>
 
   <div id="buttons">
-    <button data-name="Alice">Alice へー！</button>
-    <button data-name="Bob">Bob へー！</button>
-    <button data-name="Carol">Carol へー！</button>
-    <button data-name="Dave">Dave へー！</button>
-    <button data-name="Eve">Eve へー！</button>
-    <button data-name="Frank">Frank へー！</button>
-    <button data-name="Grace">Grace へー！</button>
-    <button data-name="Heidi">Heidi へー！</button>
-    <button data-name="Ivan">Ivan へー！</button>
-    <button data-name="Judy">Judy へー！</button>
-    <button data-name="Mallory">Mallory へー！</button>
+    <button data-name="三浦さん">三浦さん へー！</button>
+    <button data-name="快平さん">快平さん へー！</button>
+    <button data-name="佐々木さん">佐々木さん へー！</button>
+    <button data-name="園田さん">園田さん へー！</button>
+    <button data-name="堀田さん">堀田さん へー！</button>
+    <button data-name="宮崎さん">宮崎さん へー！</button>
+    <button data-name="渋谷さん">渋谷さん へー！</button>
+    <button data-name="工藤さん">工藤さん へー！</button>
+    <button data-name="秋山さん">秋山さん へー！</button>
+    <button data-name="隅田さん">隅田さん へー！</button>
+    <button data-name="李さん">李さん へー！</button>
   </div>
 
   <div id="count">0</div>
@@ -80,10 +91,12 @@
   <h2>へー！ログ</h2>
   <div id="log"></div>
 
+  <button id="resetBtn">リセット</button>
+
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, updateDoc } 
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, updateDoc, getDocs, deleteDoc } 
       from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
     // 🔹 あなたのFirebase設定をここにコピペ！
@@ -103,6 +116,7 @@
     const logDiv = document.getElementById("log");
     const countDisplay = document.getElementById("count");
     const scoreboardDiv = document.getElementById("scoreboard");
+    const resetBtn = document.getElementById("resetBtn");
 
     // 初期化
     const init = async () => {
@@ -134,6 +148,18 @@
       });
     });
 
+    // リセットボタン処理
+    resetBtn.addEventListener("click", async () => {
+      if (!confirm("本当にリセットしますか？")) return;
+
+      await updateDoc(counterRef, { count: 0 });
+
+      const logsSnapshot = await getDocs(collection(db, "logs"));
+      logsSnapshot.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "logs", docSnap.id));
+      });
+    });
+
     // 総カウント表示
     onSnapshot(counterRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -151,7 +177,7 @@
       });
 
       // スコアボード更新
-      const memberNames = ["Alice","Bob","Carol","Dave","Eve","Frank","Grace","Heidi","Ivan","Judy","Mallory"];
+      const memberNames = ["三浦さん","快平さん","佐々木さん","園田さん","堀田さん","宮崎さん","渋谷さん","工藤さん","秋山さん","隅田さん","李さん"];
       let scoreHtml = "";
       memberNames.forEach(name => {
         const num = counts[name] || 0;
@@ -165,7 +191,7 @@
         const data = doc.data();
         const entry = document.createElement("div");
         entry.className = "log-entry";
-        const nameLower = data.name.toLowerCase();
+        const nameLower = data.name.replace(/さん/g,'').toLowerCase();
         const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString() : "";
         entry.innerHTML = `
           <div class="name">${data.name}:</div>
@@ -178,4 +204,3 @@
   </script>
 </body>
 </html>
-
