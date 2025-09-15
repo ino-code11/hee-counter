@@ -9,6 +9,16 @@
       font-size: 1.2rem; padding: 10px 20px; margin: 5px; border-radius: 8px; cursor: pointer;
     }
     #count { font-size: 2rem; margin-top: 20px; }
+    
+    #scoreboard {
+      margin-top: 20px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+      font-weight: bold;
+    }
+
     #log {
       margin-top: 30px;
       text-align: left;
@@ -22,24 +32,27 @@
       height: 300px;
       overflow-y: auto;
     }
+
     .log-entry {
       display: flex;
       align-items: flex-start;
       margin: 6px 0;
     }
+
     .name { font-weight: bold; margin-right: 8px; min-width: 70px; text-align: right; }
     .bubble { padding: 6px 12px; border-radius: 16px; max-width: 300px; word-wrap: break-word; color: #fff; }
-    .alice { background: #3498db; }  /* 青 */
-    .bob { background: #2ecc71; }    /* 緑 */
-    .carol { background: #e67e22; }  /* オレンジ */
-    .dave { background: #9b59b6; }   /* 紫 */
-    .eve { background: #e74c3c; }    /* 赤 */
-    .frank { background: #1abc9c; }  /* 水色 */
-    .grace { background: #f1c40f; }  /* 黄 */
-    .heidi { background: #e84393; }  /* ピンク */
-    .ivan { background: #34495e; }   /* 濃紺 */
-    .judy { background: #d35400; }   /* 茶 */
-    .mallory { background: #7f8c8d; }/* グレー */
+
+    .alice { background: #3498db; }
+    .bob { background: #2ecc71; }
+    .carol { background: #e67e22; }
+    .dave { background: #9b59b6; }
+    .eve { background: #e74c3c; }
+    .frank { background: #1abc9c; }
+    .grace { background: #f1c40f; }
+    .heidi { background: #e84393; }
+    .ivan { background: #34495e; }
+    .judy { background: #d35400; }
+    .mallory { background: #7f8c8d; }
   </style>
 </head>
 <body>
@@ -60,6 +73,10 @@
   </div>
 
   <div id="count">0</div>
+
+  <h2>部員ごとの押下回数</h2>
+  <div id="scoreboard"></div>
+
   <h2>へー！ログ</h2>
   <div id="log"></div>
 
@@ -69,14 +86,13 @@
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, updateDoc } 
       from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    // 🔹 あなたのFirebase設定をここにコピペ！
     const firebaseConfig = {
-      apiKey: "AIzaSyAr8etX574HAPKISDxjGNFru_WrFcNthHo",
-      authDomain: "hee-counter-1.firebaseapp.com",
-      projectId: "hee-counter-1",
-      storageBucket: "hee-counter-1.firebasestorage.app",
-      messagingSenderId: "487272221928",
-      appId: "1:487272221928:web:48f40b93de7acbb8800d5d"
+      apiKey: "★あなたのAPIキー★",
+      authDomain: "★あなたのauthDomain★",
+      projectId: "★あなたのprojectId★",
+      storageBucket: "★あなたのstorageBucket★",
+      messagingSenderId: "★あなたのsenderId★",
+      appId: "★あなたのappId★"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -85,7 +101,9 @@
     const counterRef = doc(db, "counter", "hee");
     const logDiv = document.getElementById("log");
     const countDisplay = document.getElementById("count");
+    const scoreboardDiv = document.getElementById("scoreboard");
 
+    // 初期化
     const init = async () => {
       const snap = await getDoc(counterRef);
       if (!snap.exists()) {
@@ -94,7 +112,7 @@
     };
     init();
 
-    // ボタンごとにイベント
+    // ボタン押下処理
     const buttons = document.querySelectorAll("#buttons button");
     buttons.forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -115,16 +133,32 @@
       });
     });
 
-    // 総カウント表示更新
+    // 総カウント表示
     onSnapshot(counterRef, (docSnap) => {
       if (docSnap.exists()) {
         countDisplay.textContent = docSnap.data().count;
       }
     });
 
-    // リアルタイムログ表示
+    // ログ＆スコアボード表示
     const logsQuery = query(collection(db, "logs"), orderBy("timestamp", "asc"));
     onSnapshot(logsQuery, (snapshot) => {
+      const counts = {};
+      snapshot.forEach(doc => {
+        const name = doc.data().name;
+        counts[name] = (counts[name] || 0) + 1;
+      });
+
+      // スコアボード更新
+      const memberNames = ["Alice","Bob","Carol","Dave","Eve","Frank","Grace","Heidi","Ivan","Judy","Mallory"];
+      let scoreHtml = "";
+      memberNames.forEach(name => {
+        const num = counts[name] || 0;
+        scoreHtml += `<div>${name}: ${num}回</div>`;
+      });
+      scoreboardDiv.innerHTML = scoreHtml;
+
+      // ログ更新
       logDiv.innerHTML = "";
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -137,7 +171,7 @@
           <div class="bubble ${nameLower}">へー！ <small>(${time})</small></div>
         `;
         logDiv.appendChild(entry);
-        logDiv.scrollTop = logDiv.scrollHeight; // 自動スクロール
+        logDiv.scrollTop = logDiv.scrollHeight;
       });
     });
   </script>
